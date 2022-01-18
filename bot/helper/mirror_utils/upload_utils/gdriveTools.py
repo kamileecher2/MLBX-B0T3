@@ -355,7 +355,7 @@ class GoogleDriveHelper:
                 if self.is_cancelled:
                     LOGGER.info("Deleting cloned data from Drive...")
                     self.deletefile(durl)
-                    return "your clone has been stopped and cloned data has been deleted!", "cancelled"
+                    return "klonunuz durduruldu ve klonlanan veriler silindi!", "cancelled"
                 msg += f'<b>Name: </b><code>{meta.get("name")}</code>\n\n<b>Size: </b>{get_readable_file_size(self.transferred_size)}'
                 msg += '\n\n<b>Type: </b>Folder'
                 msg += f'\n<b>SubFolders: </b>{self.__total_folders}'
@@ -396,18 +396,18 @@ class GoogleDriveHelper:
                 buttons.buildbutton(f"{BUTTON_SIX_NAME}", f"{BUTTON_SIX_URL}")
         except Exception as err:
             if isinstance(err, RetryError):
-                LOGGER.info(f"Total Attempts: {err.last_attempt.attempt_number}")
+                LOGGER.info(f"Toplam Girişimler: {err.last_attempt.attempt_number}")
                 err = err.last_attempt.exception()
             err = str(err).replace('>', '').replace('<', '')
             LOGGER.error(err)
-            if "User rate limit exceeded" in str(err):
-                msg = "User rate limit exceeded."
-            elif "File not found" in str(err):
+            if "Kullanıcı oranı sınırı aşıldı" in str(err):
+                msg = "Kullanıcı oranı sınırı aşıldı."
+            elif "Dosya bulunamadı" in str(err):
                 token_service = self.__alt_authorize()
                 if token_service is not None:
                     self.__service = token_service
                     return self.clone(link)
-                msg = "File not found."
+                msg = "Dosya bulunamadı."
             else:
                 msg = f"Error.\n{err}"
             return msg, ""
@@ -436,7 +436,7 @@ class GoogleDriveHelper:
     def __create_directory(self, directory_name, parent_id):
         file_metadata = {
             "name": directory_name,
-            "description": "Uploaded by Mirror-leech-telegram-bot",
+            "description": "Uploaded by Livebox",
             "mimeType": self.__G_DRIVE_DIR_MIME_TYPE
         }
         if parent_id is not None:
@@ -445,7 +445,7 @@ class GoogleDriveHelper:
         file_id = file.get("id")
         if not IS_TEAM_DRIVE:
             self.__set_permission(file_id)
-        LOGGER.info("Created G-Drive Folder:\nName: {}\nID: {} ".format(file.get("name"), file_id))
+        LOGGER.info("G-Drive Folder:\nName: {}\nID: {} ".format(file.get("name"), file_id))
         return file_id
 
     def __upload_dir(self, input_directory, parent_id):
@@ -534,7 +534,7 @@ class GoogleDriveHelper:
                     nxt_page += 1
             telegraph.edit_page(
                 path = self.path[prev_page],
-                title = 'Mirror-Leech-Bot Drive Search',
+                title = 'Drive Search',
                 content=content
             )
         return
@@ -721,7 +721,7 @@ class GoogleDriveHelper:
         for content in self.telegraph_content:
             self.path.append(
                 telegraph.create_page(
-                    title='Mirror-Leech-Bot Drive Search',
+                    title='Drive Search',
                     content=content
                 )["path"]
             )
@@ -767,16 +767,16 @@ class GoogleDriveHelper:
                 msg += f'\n<b>Files: </b>{self.__total_files}'
         except Exception as err:
             if isinstance(err, RetryError):
-                LOGGER.info(f"Total Attempts: {err.last_attempt.attempt_number}")
+                LOGGER.info(f"Toplam Girişimler: {err.last_attempt.attempt_number}")
                 err = err.last_attempt.exception()
             err = str(err).replace('>', '').replace('<', '')
             LOGGER.error(err)
-            if "File not found" in str(err):
+            if "Dosya bulunamadı" in str(err):
                 token_service = self.__alt_authorize()
                 if token_service is not None:
                     self.__service = token_service
                     return self.count(link)
-                msg = "File not found."
+                msg = "Dosya bulunamadı."
             else:
                 msg = f"Error.\n{err}"
         return msg
@@ -808,13 +808,13 @@ class GoogleDriveHelper:
         try:
             file_id = self.__getIdFromUrl(link)
         except (KeyError, IndexError):
-            msg = "Google Drive ID could not be found in the provided link"
+            msg = "Google Drive Kimliği bulunamadı"
             return msg, "", "", ""
         LOGGER.info(f"File ID: {file_id}")
         try:
             meta = self.__getFileMetadata(file_id)
             name = meta['name']
-            LOGGER.info(f"Checking size, this might take a minute: {name}")
+            LOGGER.info(f"Boyut kontrol ediliyor, bu işlem bir dakika sürebilir: {name}")
             if meta.get('mimeType') == self.__G_DRIVE_DIR_MIME_TYPE:
                 self.__gDrive_directory(meta)
             else:
@@ -828,12 +828,12 @@ class GoogleDriveHelper:
                 err = err.last_attempt.exception()
             err = str(err).replace('>', '').replace('<', '')
             LOGGER.error(err)
-            if "File not found" in str(err):
+            if "Dosya bulunamadı" in str(err):
                 token_service = self.__alt_authorize()
                 if token_service is not None:
                     self.__service = token_service
                     return self.helper(link)
-                msg = "File not found."
+                msg = "Dosya bulunamadı."
             else:
                 msg = f"Error.\n{err}"
             return msg, "", "", ""
@@ -859,7 +859,7 @@ class GoogleDriveHelper:
             LOGGER.error(err)
             if "downloadQuotaExceeded" in str(err):
                 err = "Download Quota Exceeded."
-            elif "File not found" in str(err):
+            elif "Dosya bulunamadı" in str(err):
                 token_service = self.__alt_authorize()
                 if token_service is not None:
                     self.__service = token_service
@@ -947,9 +947,9 @@ class GoogleDriveHelper:
         self.is_cancelled = True
         if self.is_downloading:
             LOGGER.info(f"Cancelling Download: {self.name}")
-            self.__listener.onDownloadError('Download stopped by user!')
+            self.__listener.onDownloadError('kullanıcı tarafından durduruldu!')
         elif self.is_cloning:
             LOGGER.info(f"Cancelling Clone: {self.name}")
         elif self.is_uploading:
             LOGGER.info(f"Cancelling Upload: {self.name}")
-            self.__listener.onUploadError('your upload has been stopped and uploaded data has been deleted!')
+            self.__listener.onUploadError('yüklemeniz durduruldu ve yüklenen veriler silindi!')
