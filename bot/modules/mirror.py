@@ -372,7 +372,7 @@ def _mirror(bot, update, isZip=False, extract=False, isQbit=False, isLeech=False
             pass
 
     if not is_url(link) and not is_magnet(link) and not ospath.exists(link):
-        help_msg = "<b>🧲 No Download Source"
+        help_msg = "<b>🧲 No Download Source</b>"
         return sendMessage(help_msg, bot, update)
 
     LOGGER.info(link)
