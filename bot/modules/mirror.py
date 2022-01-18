@@ -372,14 +372,7 @@ def _mirror(bot, update, isZip=False, extract=False, isQbit=False, isLeech=False
             pass
 
     if not is_url(link) and not is_magnet(link) and not ospath.exists(link):
-        help_msg = "<b>Send link along with command line:</b>"
-        help_msg += "\n<code>/command</code> {link} |newname pswd: mypassword [𝚣𝚒𝚙/𝚞𝚗𝚣𝚒𝚙]"
-        help_msg += "\n\n<b>By replying to link or file:</b>"
-        help_msg += "\n<code>/command</code> |newname pswd: mypassword [𝚣𝚒𝚙/𝚞𝚗𝚣𝚒𝚙]"
-        help_msg += "\n\n<b>Direct link authorization:</b>"
-        help_msg += "\n<code>/command</code> {link} |newname pswd: mypassword\nusername\npassword"
-        help_msg += "\n\n<b>Qbittorrent selection:</b>"
-        help_msg += "\n<code>/qbcommand</code> <b>s</b> {link} or by replying to {file}"
+        help_msg = "<b>🧲 No Download Source"
         return sendMessage(help_msg, bot, update)
 
     LOGGER.info(link)
@@ -391,7 +384,7 @@ def _mirror(bot, update, isZip=False, extract=False, isQbit=False, isLeech=False
         if content_type is None or match(r'text/html|text/plain', content_type):
             try:
                 link = direct_link_generator(link)
-                LOGGER.info(f"Generated link: {link}")
+                LOGGER.info(f"Link: {link}")
             except DirectDownloadLinkException as e:
                 LOGGER.info(str(e))
                 if str(e).startswith('ERROR:'):
@@ -425,9 +418,9 @@ def _mirror(bot, update, isZip=False, extract=False, isQbit=False, isLeech=False
 
     if is_gdrive_link(link):
         if not isZip and not extract and not isLeech:
-            gmsg = f"Use /{BotCommands.CloneCommand} to clone Google Drive file/folder\n\n"
-            gmsg += f"Use /{BotCommands.ZipMirrorCommand} to make zip of Google Drive folder\n\n"
-            gmsg += f"Use /{BotCommands.UnzipMirrorCommand} to extracts Google Drive archive file"
+            gmsg = f"/{BotCommands.CloneCommand} clone Google Drive file/folder\n\n"
+            gmsg += f"/{BotCommands.ZipMirrorCommand} make zip of Google Drive folder\n\n"
+            gmsg += f"/{BotCommands.UnzipMirrorCommand} extracts Google Drive archive file"
             return sendMessage(gmsg, bot, update)
         Thread(target=add_gd_download, args=(link, listener, gdtot_link)).start()
 
