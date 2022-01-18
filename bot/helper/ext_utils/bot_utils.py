@@ -20,15 +20,15 @@ PAGE_NO = 1
 
 
 class MirrorStatus:
-    STATUS_UPLOADING = "Uploading...📤"
-    STATUS_DOWNLOADING = "Downloading...📥"
+    STATUS_UPLOADING = "Upload...📤"
+    STATUS_DOWNLOADING = "Download...📥"
     STATUS_CLONING = "Cloning...♻️"
     STATUS_WAITING = "Queued...💤"
     STATUS_FAILED = "Failed 🚫. Cleaning Download..."
     STATUS_PAUSE = "Paused...⛔️"
-    STATUS_ARCHIVING = "Archiving...🔐"
-    STATUS_EXTRACTING = "Extracting...📂"
-    STATUS_SPLITTING = "Splitting...✂️"
+    STATUS_ARCHIVING = "Archive...🔐"
+    STATUS_EXTRACTING = "Extract...📂"
+    STATUS_SPLITTING = "Split...✂️"
     STATUS_CHECKING = "CheckingUp...📝"
     STATUS_SEEDING = "Seeding...🌧"
 
@@ -105,10 +105,10 @@ def get_progress_bar_string(status):
     p = 0 if total == 0 else round(completed * 100 / total)
     p = min(max(p, 0), 100)
     cFull = p // 8
-    p_str = '■' * cFull
-    p_str += '□' * (12 - cFull)
+    p_str = '⬤' * cFull
+    p_str += '⊙' * (12 - cFull)
     p_str = f"[{p_str}]"
-    return p_str
+    return 
 
 def get_readable_message():
     with download_dict_lock:
@@ -125,8 +125,8 @@ def get_readable_message():
                 globals()['PAGE_NO'] -= 1
             START = COUNT
         for index, download in enumerate(list(download_dict.values())[START:], start=1):
-            msg += f"<b>Name:</b> <code>{download.name()}</code>"
-            msg += f"\n<b>Status:</b> <i>{download.status()}</i>"
+            msg += f"\n<b>📁 Name: </b> <code>{download.name()}</code>"
+            msg += f"\n<b>📝 Status: </b> <i>{download.status()}</i>"
             if download.status() not in [
                 MirrorStatus.STATUS_ARCHIVING,
                 MirrorStatus.STATUS_EXTRACTING,
@@ -135,39 +135,41 @@ def get_readable_message():
             ]:
                 msg += f"\n{get_progress_bar_string(download)} {download.progress()}"
                 if download.status() == MirrorStatus.STATUS_CLONING:
-                    msg += f"\n<b>Cloned:</b> {get_readable_file_size(download.processed_bytes())} of {download.size()}"
+                    msg += f"\n<b>♻️ Clone:</b> {get_readable_file_size(download.processed_bytes())} of {download.size()}"
                 elif download.status() == MirrorStatus.STATUS_UPLOADING:
-                    msg += f"\n<b>Uploaded:</b> {get_readable_file_size(download.processed_bytes())} of {download.size()}"
+                    msg += f"\n<b>📤 UP:</b> {get_readable_file_size(download.processed_bytes())} of {download.size()}"
                 else:
-                    msg += f"\n<b>Downloaded:</b> {get_readable_file_size(download.processed_bytes())} of {download.size()}"
-                msg += f"\n<b>Speed:</b> {download.speed()} | <b>ETA:</b> {download.eta()}"
+                    msg += f"\n<b>📥 DL:</b> {get_readable_file_size(download.processed_bytes())} of {download.size()}"
+                msg += f"\n<b>🚀 Speed:</b> <code>{download.speed()}</code>"
+                msg += f"\n<b>⏰ Time:</b> <code>{download.eta()}</code>"
+                msg += f"\n<b>👤 User:</b> <b>{download.message.from_user.first_name}</b>"
                 try:
-                    msg += f"\n<b>Seeders:</b> {download.aria_download().num_seeders}" \
-                           f" | <b>Peers:</b> {download.aria_download().connections}"
+                    msg += f"\n<b>🌱 Seed:</b> <code>{download.aria_download().num_seeders}</code>" \
+                           f" | <b>🧲 Peer:</b> <code>{download.aria_download().connections}</code>"
                 except:
                     pass
                 try:
-                    msg += f"\n<b>Seeders:</b> {download.torrent_info().num_seeds}" \
-                           f" | <b>Leechers:</b> {download.torrent_info().num_leechs}"
+                    msg += f"\n<b>🌱 Seed:</b> <code>{download.torrent_info().num_seeds}</code>" \
+                           f" | <b>🧲 Leech:</b> <code>{download.torrent_info().num_leechs}</code>"                    
                 except:
                     pass
-                msg += f"\n<code>/{BotCommands.CancelMirror} {download.gid()}</code>"
+                msg += f"\n⛔ Cancel:<code>/{BotCommands.CancelMirror} {download.gid()}</code>"
             elif download.status() == MirrorStatus.STATUS_SEEDING:
-                msg += f"\n<b>Size: </b>{download.size()}"
-                msg += f"\n<b>Speed: </b>{get_readable_file_size(download.torrent_info().upspeed)}/s"
-                msg += f" | <b>Uploaded: </b>{get_readable_file_size(download.torrent_info().uploaded)}"
-                msg += f"\n<b>Ratio: </b>{round(download.torrent_info().ratio, 3)}"
-                msg += f" | <b>Time: </b>{get_readable_time(download.torrent_info().seeding_time)}"
-                msg += f"\n<code>/{BotCommands.CancelMirror} {download.gid()}</code>"
+                msg += f"\n<b>📜 Size: </b>{download.size()}"
+                msg += f"\n<b>🚀 Speed: </b>{get_readable_file_size(download.torrent_info().upspeed)}/s"
+                msg += f" | <b>📤 UP: </b>{get_readable_file_size(download.torrent_info().uploaded)}"
+                msg += f"\n<b>♻️ Ratio: </b>{round(download.torrent_info().ratio, 3)}"
+                msg += f" | <b>⏰ Time: </b>{get_readable_time(download.torrent_info().seeding_time)}"
+                msg += f"\n⛔ Cancel:<code>/{BotCommands.CancelMirror} {download.gid()}</code>"
             else:
-                msg += f"\n<b>Size: </b>{download.size()}"
+                msg += f"\n<b>📜 Size: </b>{download.size()}"
             msg += "\n\n"
             if STATUS_LIMIT is not None and index == STATUS_LIMIT:
                 break
         total, used, free, _ = disk_usage('.')
         free = get_readable_file_size(free)
         currentTime = get_readable_time(time() - botStartTime)
-        bmsg = f"<b>CPU:</b> {cpu_percent()}% | <b>FREE:</b> {free}"
+        bmsg = f"<b>C:</b> {cpu_percent()}% | <b>F:</b> {free}"
         for download in list(download_dict.values()):
             speedy = download.speed()
             if download.status() == MirrorStatus.STATUS_DOWNLOADING:
@@ -182,13 +184,13 @@ def get_readable_message():
                     uldl_bytes += float(speedy.split('M')[0]) * 1048576
         dlspeed = get_readable_file_size(dlspeed_bytes)
         ulspeed = get_readable_file_size(uldl_bytes)
-        bmsg += f"\n<b>RAM:</b> {virtual_memory().percent}% | <b>UPTIME:</b> {currentTime}"
+        bmsg += f"\n<b>R:</b> {virtual_memory().percent}% | <b>UP:</b> {currentTime}"
         bmsg += f"\n<b>DL:</b> {dlspeed}/s | <b>UL:</b> {ulspeed}/s"
         if STATUS_LIMIT is not None and tasks > STATUS_LIMIT:
-            msg += f"<b>Page:</b> {PAGE_NO}/{pages} | <b>Tasks:</b> {tasks}\n"
+            msg += f"<b>📝 Page:</b> {PAGE_NO}/{pages} | <b>🔄 Task:</b> {tasks}\n"
             buttons = ButtonMaker()
-            buttons.sbutton("Previous", "status pre")
-            buttons.sbutton("Next", "status nex")
+            buttons.sbutton("⏮️", "pre")
+            buttons.sbutton("⏭️", "nex")
             button = InlineKeyboardMarkup(buttons.build_menu(2))
             return msg + bmsg, button
         return msg + bmsg, ""
